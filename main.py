@@ -18,13 +18,13 @@ def ADD():
 def MOV():
     """ SET [value] [memory address]"""
     global pointer, memory, registers
-    registers[memory[pointer + 2]] = memory[pointer + 1]
+    memory[memory[pointer + 2]] = memory[pointer + 1]
     pointer += 0x03
 
 def OUT():
-    """ OUT [register] """
+    """ OUT [memory address] """
     global pointer, memory, registers
-    print( chr( registers[memory[pointer + 1]] ) )
+    print( chr( memory[memory[pointer + 1]] ), end='')
     pointer += 0x02
 
 def END():
@@ -42,12 +42,32 @@ def run():
                    0x03: MOV,
                    0x0f: END}
 
-    # MOV 'A' A
-    # OUT A
+    # MOV 'H' f0
+    # MOV 'e' f1
+    # MOV 'l' f2
+    # MOV 'l' f3
+    # MOV 'o' f4
+    # MOV NEWLINE f5
+    # OUT f0
+    # OUT f1
+    # OUT f2
+    # OUT f3
+    # OUT f4
+    # OUT f5
     # END
     memory = load_program("""
-                          03 41 00
-                          01 00
+                          03 48 f0
+                          03 65 f1
+                          03 6c f2
+                          03 6c f3
+                          03 6f f4
+                          03 0a f5
+                          01 f0
+                          01 f1
+                          01 f2
+                          01 f3
+                          01 f4
+                          01 f5
                           0f
                           """)
     print()
