@@ -1,5 +1,3 @@
-import time
-
 memory = []
 pointer = 0x00
 registers = {0x00: 0,
@@ -98,24 +96,15 @@ def run():
                    0x08: GET,
                    0xff: END}
 
-    # Prints the alphabet
-    # ADD 26 A
-    # ADD 'A' B
-    # GET B f0
-    # OUT f0
-    # SUB 1 A
-    # ADD 1 B
-    # JNZ A 06
-    # END
-    memory = load_program("""
-                          02 1a 00
-                          02 41 01
-                          08 01 f0
-                          01 f0
-                          03 01 00
-                          02 01 01
-                          07 00 06
-                          ff
+    memory = load_program("""               $ Alphabet Printer Program
+                          02 1a 00          $ ADD 26 A    Register A Keeps track of how many letters we have left
+                          02 41 01          $ ADD 'A' B   Register B keeps track of what letter we are on
+                          08 01 f0          $ GET B f0
+                          01 f0             $ OUT f0
+                          03 01 00          $ SUB 1 A 
+                          02 01 01          $ ADD 1 B
+                          07 00 06          $ JNZ A 06
+                          ff                $ END
                           """)
     print()
     pretty_print_memory()
@@ -140,16 +129,30 @@ def run():
 
 def load_program(program: str):
     memory = [0x00 for i in range(0x100)]
-    program_list = list(program)
-    for bit in program_list[:]:
-        if bit not in '0123456789abcdef':
-            program_list.remove(bit)
+    
+    input_list = list(program)
+    program_list = []
 
-    # Can't overflow our memory!
+    COMMENT_FLAG = False
+    for bit in input_list[:]:
+        if bit == '$':
+            COMMENT_FLAG = True
+
+        if bit == '\n':
+            COMMENT_FLAG = False
+
+        if bit not in '0123456789abcdef' or COMMENT_FLAG:
+            #print(bit, end='')
+            pass
+
+        else:
+            program_list.append(bit)
+
+    # Don't want to overflow the memory!
     if len(program_list) > len(memory):
         raise ValueError
 
-    # Turns ['0', '1', '0', '1', '1', '1', '0', '1', '0', '1'...] into [0b01001101, '0b01...']
+    # Changes ['0', 'f', '1', '4', 'b', '1', '5', '3' ...] into ['0f', '14', 'b1', '53', ...]
     final_list = ["".join(program_list[i:i+2]) for i in range(0, len(program_list), 2)]
 
     for bit_index in range(len(final_list)):
