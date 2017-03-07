@@ -1,3 +1,5 @@
+import time
+
 memory = []
 pointer = 0x00
 registers = {0x00: 0,
@@ -12,24 +14,73 @@ def NOP():
     pointer += 0x01
 
 def ADD():
-    global pointer, memory
-    return memory[pointer] + memory[pointer + 1]
+    """ Add a value to a register 
+    Syntax: ADD [value] [register]
+    """
+    global pointer, memory, registers
+    registers[memory[pointer + 0x02]] += memory[pointer + 0x01]
+    pointer += 0x03
+
+def SUB():
+    """ Subtract a value to a register 
+    Syntax: SUB [value] [register]
+    """
+    global pointer, memory, registers
+    registers[memory[pointer + 0x02]] -= memory[pointer + 0x01]
+    pointer += 0x03
+
+def GET():
+    """ Get value from a register, put in memory location
+    Syntax: GET [register] [memory location]
+    """
+    global pointer, memory, registers
+    memory[memory[pointer + 0x02]] = registers[memory[pointer + 0x01]]
+    pointer += 0x03
 
 def MOV():
     """ SET [value] [memory address]"""
     global pointer, memory, registers
-    memory[memory[pointer + 2]] = memory[pointer + 1]
+    memory[memory[pointer + 0x02]] = memory[pointer + 0x01]
     pointer += 0x03
 
 def OUT():
     """ OUT [memory address] """
     global pointer, memory, registers
-    print( chr( memory[memory[pointer + 1]] ), end='')
+    print( chr( memory[memory[pointer + 0x01]] ), end='')
     pointer += 0x02
 
 def END():
     global pointer, memory, FLAG_FINISHED
     FLAG_FINISHED = True
+
+def JMP():
+    """ Moves the pointer to a point in memory.
+    Syntax: JMP [memory address]
+    """
+    global pointer, memory
+    pointer = memory[pointer + 0x02]
+
+def JEZ():
+    """ Jump if register is 0 
+    Syntax: JEZ [register] [Jump location]
+    """
+    global pointer, memory, registers
+    if registers[memory[pointer + 0x01]] == 0:
+        pointer = memory[pointer + 0x02]
+        return
+
+    pointer += 0x03
+
+def JNZ():
+    """ Jump if register is NOT 0
+    Syntax: JNZ [register] [jump location]
+    """
+    global pointer, memory, registers
+    if registers[memory[pointer + 0x01]] != 0:
+        pointer = memory[pointer + 0x02]
+        return
+
+    pointer += 0x03
 
 def run():
     global pointer, memory, FLAG_FINISHED
@@ -39,36 +90,32 @@ def run():
     command_map = {0x00: NOP,
                    0x01: OUT,
                    0x02: ADD,
-                   0x03: MOV,
-                   0x0f: END}
+                   0x03: SUB,
+                   0x04: MOV,
+                   0x05: JMP,
+                   0x06: JEZ,
+                   0x07: JNZ,
+                   0x08: GET,
+                   0xff: END}
 
-    # MOV 'H' f0
-    # MOV 'e' f1
-    # MOV 'l' f2
-    # MOV 'l' f3
-    # MOV 'o' f4
-    # MOV NEWLINE f5
+    # Prints the alphabet
+    # ADD 26 A
+    # ADD 'A' B
+    # GET B f0
     # OUT f0
-    # OUT f1
-    # OUT f2
-    # OUT f3
-    # OUT f4
-    # OUT f5
+    # SUB 1 A
+    # ADD 1 B
+    # JNZ A 06
     # END
     memory = load_program("""
-                          03 48 f0
-                          03 65 f1
-                          03 6c f2
-                          03 6c f3
-                          03 6f f4
-                          03 0a f5
+                          02 1a 00
+                          02 41 01
+                          08 01 f0
                           01 f0
-                          01 f1
-                          01 f2
-                          01 f3
-                          01 f4
-                          01 f5
-                          0f
+                          03 01 00
+                          02 01 01
+                          07 00 06
+                          ff
                           """)
     print()
     pretty_print_memory()
