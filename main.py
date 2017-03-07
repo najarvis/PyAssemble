@@ -80,6 +80,40 @@ def JNZ():
 
     pointer += 0x03
 
+def SWP():
+	""" Swap value of two registers
+	Syntax: SWP [register from] [register to]
+	"""
+	global pointer, memory, registers
+	tmp = registers[memory[pointer + 0x02]]
+	registers[memory[pointer + 0x02]] = registers[memory[pointer + 0x01]]
+	registers[memory[pointer + 0x01]] = tmp
+	pointer += 0x03
+
+def SLR():
+	""" Shift left value in a register
+	Syntax: SLR [amount] [register]
+	"""
+	global pointer, memory, registers
+	registers[memory[pointer + 0x02]] = registers[memory[pointer + 0x02]] << memory[pointer + 0x01]
+	pointer += 0x03
+
+def SRR():
+	""" Shift right value in a register
+	Syntax: SLR [amount] [register]
+	"""
+	global pointer, memory, registers
+	registers[memory[pointer + 0x02]] = registers[memory[pointer + 0x02]] >> memory[pointer + 0x01]
+	pointer += 0x03
+
+def INT():
+	""" Print out a value as a decimal integer
+	Syntax: INT [memory address]
+	"""
+	global pointer, memory
+	print(memory[memory[pointer + 0x01]], end='')
+	pointer += 0x02
+
 def run():
     global pointer, memory, FLAG_FINISHED
     memory = [0x00 for i in range(0x100)]
@@ -94,6 +128,10 @@ def run():
                    0x06: JEZ,
                    0x07: JNZ,
                    0x08: GET,
+		   0x09: SWP,
+		   0x0a: SLR,
+		   0x0b: SRR,
+		   0x0c: INT,
                    0xff: END}
 
 #    memory = load_program("""               $ Alphabet Printer Program
@@ -107,7 +145,8 @@ def run():
 #                          ff                $ END
 #                          """)
  
-    memory = load_program_file("alphabet.pas")
+    #memory = load_program_file("alphabet.pas")
+    memory = load_program_file("double.pas")
     print()
     pretty_print_memory()
     print()
@@ -116,9 +155,9 @@ def run():
 
     print("Code Output:")
     while not FLAG_FINISHED:
-        # print(command_map[memory[pointer]].__name__)
+        #print(command_map[memory[pointer]].__name__)
         command_map[memory[pointer]]()
-
+        
         if pointer == len(memory):
             FLAG_FINISHED = True
 
@@ -174,7 +213,7 @@ def pretty_print_memory():
     global memory, registers
     print ("CURRENT MEMORY")
     for i in range(len(memory)):
-        print('{0:4}'.format(hex(memory[i])), end=' ')
+        print('{0:5}'.format('0x' + hex(memory[i])[2:].zfill(2)), end=' ')
         if (i + 1) % 0x10 == 0:
             print()
 
