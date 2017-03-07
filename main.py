@@ -96,16 +96,18 @@ def run():
                    0x08: GET,
                    0xff: END}
 
-    memory = load_program("""               $ Alphabet Printer Program
-                          02 1a 00          $ ADD 26 A    Register A Keeps track of how many letters we have left
-                          02 41 01          $ ADD 'A' B   Register B keeps track of what letter we are on
-                          08 01 f0          $ GET B f0
-                          01 f0             $ OUT f0
-                          03 01 00          $ SUB 1 A 
-                          02 01 01          $ ADD 1 B
-                          07 00 06          $ JNZ A 06
-                          ff                $ END
-                          """)
+#    memory = load_program("""               $ Alphabet Printer Program
+#                          02 1a 00          $ ADD 26 A    Register A Keeps track of how many letters we have left
+#                          02 41 01          $ ADD 'A' B   Register B keeps track of what letter we are on
+#                          08 01 f0          $ GET B f0
+#                          01 f0             $ OUT f0
+#                          03 01 00          $ SUB 1 A 
+#                          02 01 01          $ ADD 1 B
+#                          07 00 06          $ JNZ A 06
+#                          ff                $ END
+#                          """)
+ 
+    memory = load_program_file("alphabet.pas")
     print()
     pretty_print_memory()
     print()
@@ -159,6 +161,14 @@ def load_program(program: str):
         memory[bit_index] = int(final_list[bit_index], 16)
 
     return memory
+
+def load_program_file(filename: str):
+    program_string = ""
+    with open(filename, 'r') as program_file:
+        program_string = "".join(program_file.read())
+
+    print(program_string)
+    return load_program(program_string)
 
 def pretty_print_memory():
     global memory, registers
