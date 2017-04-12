@@ -1,3 +1,5 @@
+import sys
+
 memory = []
 pointer = 0x00
 registers = {0x00: 0,
@@ -114,7 +116,7 @@ def INT():
 	print(memory[memory[pointer + 0x01]], end='')
 	pointer += 0x02
 
-def run():
+def run(program="alphabet.pas"):
     global pointer, memory, FLAG_FINISHED
     memory = [0x00 for i in range(0x100)]
     pointer = 0x00
@@ -146,7 +148,7 @@ def run():
 #                          """)
  
     #memory = load_program_file("alphabet.pas")
-    memory = load_program_file("double.pas")
+    memory = load_program_file(program)
     print()
     pretty_print_memory()
     print()
@@ -226,4 +228,7 @@ def pretty_print_memory():
 
 
 if __name__ == "__main__":
-    run()
+    if len(sys.argv) > 1:
+        run(sys.argv[1])
+    else:
+        run()
